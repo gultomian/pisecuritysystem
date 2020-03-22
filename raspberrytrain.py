@@ -18,6 +18,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 sent=False
+emailtreshold=300
 
 def getgambardanlabel(path):
     #ambil path dari file di folder
@@ -104,6 +105,7 @@ try:
     recognizer.read('trained/Trainer.yml')
           
     data_timestamp=pd.DataFrame(columns=['TIME'])
+    time.sleep(2.0)
     starttime=time.time()
     while True:
         runtime=time.time()
@@ -133,12 +135,12 @@ try:
                 tst=int(tst)
                 data_timestamp.loc[len(data_timestamp)] = [tst]
                 #cv2.imwrite("Takdikenal/Gambar"+str(nomorFile) + ".jpg", im[y:y+h,x:x+w]) 
-                
-                
+                      
             cv2.putText(im,str(tt),(x,y+h), font, 1,(255,255,255),2)
-            totaltime=int(runtime)-int(starttime)
-            #print (totaltime)
-           # print (len(data_timestamp))
+
+        totaltime=int(runtime)-int(starttime)
+        print (totaltime)
+            # print (len(data_timestamp))
 
         if len(data_timestamp)>0:
             data_timestamp.drop_duplicates(subset=['TIME'],keep='first')
@@ -156,6 +158,9 @@ try:
             #print (data_timestamp)
             #print (int(data_timestamp_awal),'dan',int(data_timestamp_akhir))
 
+            if totaltime>=emailtreshold:
+                sent=False
+                emailtreshold=emailtreshold+300
             
             treshold=10
             if int(data_timestamp_akhir)>=(int(data_timestamp_awal)+treshold):
@@ -164,8 +169,7 @@ try:
                         sendemail()
                         print('email')
                         sent=True
-                        if int(data_timestamp_akhir)==(int(data_timestamp_awal)+60):
-                            sent=False
+                            #emailtreshold=emailtreshold+60
                     if sent==True:
                         pass
                     cv2.imwrite("Takdikenal/Gambar"+str(nomorFile) + "a.jpg", im[y:y+h,x:x+w]) 
