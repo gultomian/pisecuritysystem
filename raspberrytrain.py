@@ -19,6 +19,8 @@ from email.mime.text import MIMEText
 
 sent=False
 emailtreshold=300
+detected = False
+standbyawal = True
 
 def getgambardanlabel(path):
     #ambil path dari file di folder
@@ -100,8 +102,8 @@ try:
 
     #recognizer = face.createLBPHFaceRecognizer()
     #$cv2.createLBPHFaceRecognizer()
-    mukamuka,nomormhs = getgambardanlabel('pretrained/')
-    recognizer.train(mukamuka, np.array(nomormhs))
+    # mukamuka,nomormhs = getgambardanlabel('pretrained/')
+    # recognizer.train(mukamuka, np.array(nomormhs))
     recognizer.read('trained/Trainer.yml')
           
     data_timestamp=pd.DataFrame(columns=['TIME'])
@@ -117,6 +119,8 @@ try:
             
             nomormhs, conf = recognizer.predict(gray[y:y+h,x:x+w])                                   
             if(conf < 40):
+                tt = ''
+                detected = True
                 cv2.rectangle(im,(x,y),(x+w,y+h),(0,255,0),2)
                 ts = time.time()      
                 date = datetime.datetime.fromtimestamp(ts).strftime('%d-%m-%Y')
@@ -142,7 +146,7 @@ try:
         print (totaltime)
             # print (len(data_timestamp))
 
-        if len(data_timestamp)>0:
+        if len(data_timestamp)>0 and detected == False:
             data_timestamp.drop_duplicates(subset=['TIME'],keep='first')
             data_timestamp_awal=data_timestamp.head(1)
             #data_timestamp_akhir=data_timestamp.tail(1)
@@ -161,24 +165,21 @@ try:
             if totaltime>=emailtreshold:
                 sent=False
                 emailtreshold=emailtreshold+300
+                standbyawal = False
             
             treshold=10
             if int(data_timestamp_akhir)>=(int(data_timestamp_awal)+treshold):
-                if int(data_timestamp_akhir)==(int(data_timestamp_awal)+treshold):
-                    if sent==False:
-                        sendemail()
-                        print('email')
-                        sent=True
-                            #emailtreshold=emailtreshold+60
-                    if sent==True:
-                        pass
-                    cv2.imwrite("Takdikenal/Gambar"+str(nomorFile) + "a.jpg", im[y:y+h,x:x+w]) 
-                    cv2.imwrite("Takdikenal/Gambar"+str(nomorFile) + "b.jpg",im) 
-                    #if totaltime %60>=0 and totaltime>=60:
-                        # print('sukses')
-                    data_timestamp=data_timestamp[0:0]
-                if int(data_timestamp_akhir)>(int(data_timestamp_awal)+treshold):
-                    data_timestamp=data_timestamp[0:0]
+                #cv2.imwrite("Takdikenal/Gambar"+str(nomorFile) + "a.jpg", im[y:y+h,x:x+w]) 
+                cv2.imwrite("Takdikenal/Gambar"+str(nomorFile) + ".jpg",im) 
+                if sent==False and standbyawal==False:
+                    sendemail()
+                    print('email')
+                    sent=True
+                        #emailtreshold=emailtreshold+60
+                
+                #if totaltime %60>=0 and totaltime>=60:
+                    # print('sukses')
+                data_timestamp=data_timestamp[0:0]
             
             
 
