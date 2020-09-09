@@ -94,8 +94,11 @@ def mainroot():
     pathload = StringVar()
     def loadingpath(): 
         folder_pilihan = fd.askdirectory(title='Pilih Folder')
-        pathload.set(folder_pilihan)
-        startrecog()
+        if 'FOLDERSISTEMKEAMANAN' in folder_pilihan and len(folder_pilihan)>0:
+            pathload.set(folder_pilihan)
+            startrecog(pathload.get())
+        if not 'FOLDERSISTEMKEAMANAN' in folder_pilihan and len(folder_pilihan)>0:
+            mb.showinfo('Nama Folder Salah', 'Nama Folder Harus "FOLDERSISTEMKEAMANAN"')
 
     def timestamp(time):
         result = datetime.datetime.fromtimestamp(time).strftime('%H:%M:%S')
@@ -124,13 +127,14 @@ def mainroot():
         return mukamuka,nomormhs
 
 
-    def sendemail():
-        with open("FOLDERSISTEMKEAMANAN/DescUser.csv") as file:
+    def sendemail(loadpath):
+
+        with open(loadpath+"/DescUser.csv") as file:
             reader = csv.reader(file)
             next(reader)  # Skip header row
             for nama, label, email in reader:
                 print(f"Sending email to {nama}")
-                daftar_file = glob.glob('FOLDERSISTEMKEAMANAN/Takdikenal/'+'/*.jpg')
+                daftar_file = glob.glob(loadpath+'/Takdikenal/'+'/*.jpg')
                 file_terbaru = max(daftar_file, key=os.path.getctime)
 
                 subject = "Seseorang tidak dikenal berada didepan pintu"
@@ -226,8 +230,7 @@ def mainroot():
 
     dropdown_file.add_command(label='Port Kamera...',command = set_port)
 
-    def startrecog():
-        loadpath=pathload.get()
+    def startrecog(loadpath):
         numport=portnum.get()
         try:
             recognizer = cv2.face.LBPHFaceRecognizer_create()
@@ -268,11 +271,11 @@ def mainroot():
                         unrecognized = True
                         cv2.rectangle(im,(x,y),(x+w,y+h),(0,0,255),2)
                         try:
-                            nomorFile=len(os.listdir("FOLDERSISTEMKEAMANAN/Takdikenal"))
+                            nomorFile=len(os.listdir(loadpath+"/Takdikenal"))
                             #cv2.putText(im,str(int(timestamp(timerB)[6:8])+tresholddetect-int(timestamp(timerA)[6:8])),(10,30), font, 1,(255,255,255),2,cv2.LINE_AA)
                         except FileNotFoundError:
-                            os.mkdir('FOLDERSISTEMKEAMANAN/Takdikenal')
-                            nomorFile=len(os.listdir("FOLDERSISTEMKEAMANAN/Takdikenal"))
+                            os.mkdir(loadpath+'/Takdikenal')
+                            nomorFile=len(os.listdir(loadpath+"/Takdikenal"))
                     # except NameError:
                         #   pass
 
@@ -299,14 +302,14 @@ def mainroot():
                     #print (timestamp(recognizedstart),timestamp(recognizedend))
                     if int(timestamp(timerA)[3:5])==int(timestamp(timerB)[3:5]) and int(timestamp(timerA)[6:8])>=(int(timestamp(timerB)[6:8])+tresholddetect):
                         if emailsent==False:
-                            cv2.imwrite("FOLDERSISTEMKEAMANAN/Takdikenal/Gambar"+str(nomorFile) + ".jpg",im)
-                            sendemail()
+                            cv2.imwrite(loadpath+"/Takdikenal/Gambar"+str(nomorFile) + ".jpg",im)
+                            sendemail(loadpath)
                             #listcoordinates.clear()
                             emailsent=True
                     if int(timestamp(timerA)[3:5]) > int(timestamp(timerB)[3:5]) and int(timestamp(timerA)[7])>=int(timestamp(timerB)[7]):
                         if emailsent==False:
-                            cv2.imwrite("FOLDERSISTEMKEAMANAN/Takdikenal/Gambar"+str(nomorFile) + ".jpg",im)
-                            sendemail()
+                            cv2.imwrite(loadpath+"/Takdikenal/Gambar"+str(nomorFile) + ".jpg",im)
+                            sendemail(loadpath)
                             #listcoordinates.clear()
                             emailsent=True
                 except NameError:
