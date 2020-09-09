@@ -7,7 +7,7 @@ import csv          #csv untuk jadiin list ke file .csv
 import numpy as np
 from PIL import Image, ImageTk
 import pandas as pd #untuk dataframe
-import datetime     #untuk waktu
+import datetime     #untuk  
 from datetime import date
 import time
 import glob
@@ -108,12 +108,13 @@ def mainroot():
         
     def hapusdata():
         folder_pilihan = fd.askdirectory(title='Pilih Folder',)
-        if 'FOLDERSISTEMKEAMANAN' in folder_pilihan:
+        if 'FOLDERSISTEMKEAMANAN' in folder_pilihan and len(folder_pilihan)>0:
             yesnohapus=mb.askyesno('Anda Yakin','Anda yakin ingin menghapus folder ini?')
             if yesnohapus:
                 shutil.rmtree(folder_pilihan)
-        else:
+        if not 'FOLDERSISTEMKEAMANAN' in folder_pilihan and len(folder_pilihan)>0:
             mb.showinfo('Nama Folder Salah', 'Nama Folder Harus "FOLDERSISTEMKEAMANAN"')
+            
         
     def viewuser():
         userwin = Toplevel(window)
